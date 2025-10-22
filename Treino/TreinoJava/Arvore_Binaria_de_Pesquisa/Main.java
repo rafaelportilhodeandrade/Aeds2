@@ -44,6 +44,7 @@ class Arvore
         raiz = null;
     }
 
+
     public void inserir(int elemento)
     {
         raiz = inserir(elemento, raiz);
@@ -89,6 +90,86 @@ class Arvore
             System.out.println(i.elemento);
         }
     }
+
+    public int getMaior()
+    {
+        No i = raiz;
+        int maior = -1;
+        if(i != null)
+        {
+            for(; i != null; i = i.dir)
+            {
+                maior = i.elemento;
+            }
+        }
+
+        return maior;
+    }
+
+    public int getMenor()
+    {
+        No i = raiz;
+        int menor = raiz.elemento;
+        if(i != null)
+        {
+            for(; i != null; i = i.esq)
+            {
+                menor = i.elemento;
+            }
+        }
+
+        return menor;
+    }
+
+    public void remover(int elemento)
+    {
+        remover(elemento, raiz);
+    }
+
+    public No remover(int elemento, No i)
+    {
+        if(i == null) throw new Error("Erro");
+        else if(elemento < i.elemento) i.esq = remover(elemento, i.esq);
+        else if(elemento > i.elemento) i.dir = remover(elemento, i.dir);
+        else if(i.dir == null) i = i.esq;
+        else if(i.esq == null) i = i.dir;
+        else
+        {
+            //i.esq = maiorEsq(i, i.esq);
+            i.dir = menorDir(i, i.dir);
+        } 
+
+        return i;
+    }
+
+    public No maiorEsq(No i, No j)
+    {
+        if(j.dir == null) 
+        {
+            i.elemento = j.elemento;
+            j = j.esq;
+        }
+        else j.dir = maiorEsq(i, j.dir);
+
+        return j;
+    }
+
+    public No menorDir(No i, No j)
+    {
+        if(j.esq == null)
+        {
+            i.elemento = j.elemento;
+            j = j.dir;
+        }
+        else j.esq = menorDir(i, j.esq);
+
+        return j;
+    }
+
+    public void mostrarRaiz()
+    {
+        System.out.println(raiz.elemento);
+    }
 }
 
 public class Main
@@ -107,7 +188,12 @@ public class Main
         arvore.inserir(10);
         arvore.inserir(11);
         arvore.inserir(7);
+        arvore.remover(6);
+        arvore.mostrarRaiz();
 
-        arvore.caminhar();
+        //arvore.caminhar();
+        //int maior = arvore.getMaior();
+        //int menor = arvore.getMenor();
+        //System.out.println(menor);
     }    
 }
