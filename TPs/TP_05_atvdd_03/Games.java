@@ -18,7 +18,6 @@ public class Games {
     private String[] tags;
 
     // ---------------------- CONSTRUTOR ----------------------
-    // Cria um objeto Games com todos os atributos fornecidos
     public Games(int id, String nome, String lancamento, int players, float preco,
             String[] idiomas, int notaCritica, float notaUsuarios, int conquistas,
             String[] empresasPub, String[] empresasDev, String[] categorias,
@@ -39,14 +38,12 @@ public class Games {
         this.tags = tags;
     }
 
-    // ---------------------- GETTER ----------------------
-    // Retorna o ID do jogo
+    // ---------------------- GETTERS ----------------------
     public int getId() {
         return id;
     }
 
     // ---------------------- MOSTRAR ----------------------
-    // Exibe todos os atributos do jogo formatados
     public void mostrar() {
         System.out.print("=> " + id + " ## " + nome + " ## " + lancamento + " ## " + players +
                 " ## " + preco + " ## " + Arrays.toString(idiomas) + " ## " +
@@ -57,39 +54,77 @@ public class Games {
     }
 
     // ---------------------- ORDENAR ----------------------
-    // Ordena o array de Games pelo nome usando Bubble Sort
-    public static void ordenar(Games[] games, int count) {
-        for (int i = 0; i < count - 1; i++) {
-            for (int j = 0; j < count - 1 - i; j++) {
-                if (games[j].nome.compareTo(games[j + 1].nome) > 0) {
-                    Games temp = games[j];
-                    games[j] = games[j + 1];
-                    games[j + 1] = temp;
-                }
-            }
+    private static long comparacoes = 0;
+    private static long movimentacoes = 0;
+
+    public static void HeapSort(Games[] games, int count) {
+        // Construir o heap (máximo)
+        for (int i = count / 2 - 1; i >= 0; i--) {
+            heapify(games, count, i);
+        }
+
+        // Extrair elementos do heap um a um
+        for (int i = count - 1; i > 0; i--) {
+            Games temp = games[0];
+            games[0] = games[i];
+            games[i] = temp;
+            movimentacoes += 3; // cada troca conta como 3 movimentações
+
+            heapify(games, i, 0);
         }
     }
 
-    // ---------------------- PESQUISA BINÁRIA ----------------------
-    // Retorna o número de comparações até encontrar o jogo (positivo se encontrado, negativo se não encontrado)
-    public static int pesquisaBinaria(Games[] games, int count, String nomeBuscado) {
-        int esq = 0, dir = count - 1;
-        int comparacoes = 0;
+    private static void heapify(Games[] games, int n, int i) {
+        int maior = i;
+        int esq = 2 * i + 1;
+        int dir = 2 * i + 2;
 
-        while (esq <= dir) {
-            int meio = (esq + dir) / 2;
+        if (esq < n)
             comparacoes++;
-            int cmp = games[meio].nome.compareTo(nomeBuscado);
+        if (esq < n && comparar(games[esq], games[maior]) > 0)
+            maior = esq;
 
-            if (cmp == 0) return comparacoes;  // encontrado
-            else if (cmp < 0) esq = meio + 1;  // busca na metade direita
-            else dir = meio - 1;               // busca na metade esquerda
+        if (dir < n)
+            comparacoes++;
+        if (dir < n && comparar(games[dir], games[maior]) > 0)
+            maior = dir;
+
+        if (maior != i) {
+            Games temp = games[i];
+            games[i] = games[maior];
+            games[maior] = temp;
+            movimentacoes += 3;
+
+            heapify(games, n, maior);
         }
-        return -comparacoes;  // não encontrado
+    }
+
+    // Função de comparação: ordena por players, e em caso de empate, por id
+    private static int comparar(Games g1, Games g2) {
+        if (g1 == null && g2 == null)
+            return 0;
+        if (g1 == null)
+            return -1;
+        if (g2 == null)
+            return 1;
+
+        // Primeiro critério: players
+        if (g1.players > g2.players)
+            return 1;
+        else if (g1.players < g2.players)
+            return -1;
+        else {
+            // Desempate: id
+            if (g1.id > g2.id)
+                return 1;
+            else if (g1.id < g2.id)
+                return -1;
+            else
+                return 0;
+        }
     }
 
     // ---------------------- SEPARAR ----------------------
-    // Separa um campo da linha CSV considerando aspas e vírgulas
     public static String[] separar(String linha, int pos) {
         String[] temp = new String[2];
         temp[0] = "";
@@ -102,8 +137,10 @@ public class Games {
                     temp[0] += c;
                 pos++;
             }
-            if (pos < linha.length()) pos++;
-            if (pos < linha.length() && linha.charAt(pos) == ',') pos++;
+            if (pos < linha.length())
+                pos++;
+            if (pos < linha.length() && linha.charAt(pos) == ',')
+                pos++;
         } else {
             while (pos < linha.length() && linha.charAt(pos) != ',') {
                 char c = linha.charAt(pos);
@@ -111,22 +148,23 @@ public class Games {
                     temp[0] += c;
                 pos++;
             }
-            if (pos < linha.length() && linha.charAt(pos) == ',') pos++;
+            if (pos < linha.length() && linha.charAt(pos) == ',')
+                pos++;
         }
 
-        temp[1] = String.valueOf(pos);  // retorna a próxima posição para leitura
+        temp[1] = String.valueOf(pos);
         return temp;
     }
 
     // ---------------------- FORMATAR ARRAY ----------------------
-    // Converte uma string separada por vírgulas em um array de strings
     public static String[] formatarArray(String array) {
         String[] tempArray = new String[100];
         int j = 0;
         String temp = "";
         int i = 0;
 
-        if (i < array.length() && array.charAt(i) == ',') i++;
+        if (i < array.length() && array.charAt(i) == ',')
+            i++;
 
         for (; i < array.length(); i++) {
             if (array.charAt(i) == ',') {
@@ -138,47 +176,80 @@ public class Games {
                 temp += array.charAt(i);
             }
         }
-        if (!temp.equals("")) tempArray[j++] = removerEspacos(temp);
+        if (!temp.equals(""))
+            tempArray[j++] = removerEspacos(temp);
 
         String[] resultado = new String[j];
-        for (int k = 0; k < j; k++) resultado[k] = tempArray[k];
+        for (int k = 0; k < j; k++)
+            resultado[k] = tempArray[k];
 
         return resultado;
     }
 
-    // ---------------------- FORMATAR DATA ----------------------
-    // Converte datas no formato "Mês Dia, Ano" para "DD/MM/AAAA"
+    // ------------------- FORMATAR DATA --------------------
     public static String formatarData(String data) {
-        if (data == null || removerEspacos(data).equals("")) return "01/01/0001";
+        if (data == null || removerEspacos(data).equals("")) {
+            return "01/01/0001";
+        }
 
         String[] partes = data.split(" ");
-        String mesTexto = (partes.length > 0 && !removerEspacos(partes[0]).equals("")) ? removerEspacos(partes[0]) : "Jan";
+
+        String mesTexto = (partes.length > 0 && !removerEspacos(partes[0]).equals("")) ? removerEspacos(partes[0])
+                : "Jan";
         String dia = (partes.length > 1 && !removerEspacos(partes[1]).equals("")) ? partes[1].replace(",", "") : "01";
         String ano = (partes.length > 2 && !removerEspacos(partes[2]).equals("")) ? partes[2] : "0001";
 
         String mesNumero;
         switch (mesTexto) {
-            case "Jan": mesNumero = "01"; break;
-            case "Feb": mesNumero = "02"; break;
-            case "Mar": mesNumero = "03"; break;
-            case "Apr": mesNumero = "04"; break;
-            case "May": mesNumero = "05"; break;
-            case "Jun": mesNumero = "06"; break;
-            case "Jul": mesNumero = "07"; break;
-            case "Aug": mesNumero = "08"; break;
-            case "Sep": mesNumero = "09"; break;
-            case "Oct": mesNumero = "10"; break;
-            case "Nov": mesNumero = "11"; break;
-            case "Dec": mesNumero = "12"; break;
-            default: mesNumero = "01";
+            case "Jan":
+                mesNumero = "01";
+                break;
+            case "Feb":
+                mesNumero = "02";
+                break;
+            case "Mar":
+                mesNumero = "03";
+                break;
+            case "Apr":
+                mesNumero = "04";
+                break;
+            case "May":
+                mesNumero = "05";
+                break;
+            case "Jun":
+                mesNumero = "06";
+                break;
+            case "Jul":
+                mesNumero = "07";
+                break;
+            case "Aug":
+                mesNumero = "08";
+                break;
+            case "Sep":
+                mesNumero = "09";
+                break;
+            case "Oct":
+                mesNumero = "10";
+                break;
+            case "Nov":
+                mesNumero = "11";
+                break;
+            case "Dec":
+                mesNumero = "12";
+                break;
+            default:
+                mesNumero = "01";
         }
 
-        if (dia.length() == 1) dia = "0" + dia;
+        if (dia.equals(""))
+            dia = "01";
+        if (dia.length() == 1)
+            dia = "0" + dia;
+
         return dia + "/" + mesNumero + "/" + ano;
     }
 
     // ---------------------- FORMATAR LINHA ----------------------
-    // Lê uma linha do CSV e cria um objeto Games preenchido
     public static Games formatar(String linha) {
         int pos = 0;
         String[] temp;
@@ -243,74 +314,84 @@ public class Games {
                 conquistas, empresasPub, empresasDev, categorias, generos, tags);
     }
 
-    // ---------------------- REMOVER ESPAÇOS ----------------------
-    // Remove espaços no início e no fim da string
+    // ---------------------- FUNÇÃO AUXILIAR ----------------------
     public static String removerEspacos(String s) {
-        if (s == null || s.equals("")) return "";
+        if (s == null || s.equals(""))
+            return "";
         int inicio = 0;
         int fim = s.length() - 1;
-        while (inicio < s.length() && s.charAt(inicio) == ' ') inicio++;
-        while (fim >= 0 && s.charAt(fim) == ' ') fim--;
-        if (fim < inicio) return "";
-        return s.substring(inicio, fim + 1);
+
+        while (inicio < s.length() && s.charAt(inicio) == ' ')
+            inicio++;
+        while (fim >= 0 && s.charAt(fim) == ' ')
+            fim--;
+
+        if (fim < inicio)
+            return "";
+        String resultado = "";
+        for (int i = inicio; i <= fim; i++)
+            resultado += s.charAt(i);
+
+        return resultado;
     }
 
     // ---------------------- MAIN ----------------------
-    // Função principal que lê o CSV, faz buscas por ID e nome, ordena e realiza pesquisa binária
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         Games[] games = new Games[1850];
         int count = 0;
+        int cont2 = 0;
         Games[] gamesPesquisa = new Games[100];
 
+        // String caminhoArquivo = "C:\\Users\\rafae\\Desktop\\java\\games.csv";
         String caminhoArquivo = "/tmp/games.csv";
 
-        // Leitura do arquivo CSV
         try (BufferedReader bf = new BufferedReader(new FileReader(caminhoArquivo))) {
             String linha;
             while ((linha = bf.readLine()) != null) {
-                if (!(linha.charAt(0) == 'A')) games[count++] = formatar(linha);
+                if (!(linha.charAt(0) == 'A')) {
+                    games[count++] = formatar(linha);
+                }
             }
+        } catch (IOException e) {
+            throw new Error("erro");
         }
 
-        int cont2 = 0;
         String entrada;
 
-        // Busca por IDs informados pelo usuário e armazena em gamesPesquisa
         while (!(entrada = sc.nextLine()).equals("FIM")) {
             int idBusca = Integer.parseInt(entrada);
             boolean achou = false;
             for (int i = 0; i < count; i++) {
                 if (games[i].getId() == idBusca) {
-                    gamesPesquisa[cont2++] = games[i];
+                    gamesPesquisa[cont2] = games[i];
+                    cont2++;
                     achou = true;
-                    break;
+                    i = count;
                 }
             }
-            if (!achou) System.out.println("Jogo não encontrado.");
+            if (!achou)
+                System.out.println("Jogo não encontrado.");
         }
 
-        // Ordena os jogos para pesquisa binária
-        ordenar(gamesPesquisa, cont2);
+        long inicio = System.nanoTime();
+        HeapSort(gamesPesquisa, cont2); 
+        long fim = System.nanoTime();
 
-        long inicio = System.currentTimeMillis();
-        int totalComparacoes = 0;
+        double tempo = (fim - inicio) / 1e6; // tempo em ms
 
-        // Pesquisa binária pelos nomes informados pelo usuário
-        while (!(entrada = sc.nextLine()).equals("FIM")) {
-            int res = pesquisaBinaria(gamesPesquisa, cont2, entrada);
-            totalComparacoes += Math.abs(res);
-            System.out.println(res > 0 ? " SIM" : " NAO");
+        // Imprimir resultados no arquivo
+        try (PrintWriter pw = new PrintWriter("890258_heapsort.txt")) {
+            pw.println("890258");
+            pw.println("Tempo de execução: " + (long) tempo + " ms");
+            pw.println("Comparacoes: " + comparacoes);
+            pw.println("Movimentacoes: " + movimentacoes);
+        } catch (IOException e) {
+            System.out.println("Erro ao escrever o arquivo.");
         }
 
-        long fim = System.currentTimeMillis();
-        long tempo = fim - inicio;
-
-        // Grava resultados em arquivo
-        try (PrintWriter writer = new PrintWriter(new File("suamatricula_binaria.txt"))) {
-            writer.println("890258");
-            writer.println("Tempo de execução: " + tempo + " ms");
-            writer.println("Número de comparações: " + totalComparacoes);
+        for (int i = 0; i < 100; i++) {
+            gamesPesquisa[i].mostrar();
         }
 
         sc.close();

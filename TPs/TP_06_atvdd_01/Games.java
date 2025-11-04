@@ -81,7 +81,7 @@ public class Games {
             comparacoes++;
             int cmp = games[meio].nome.compareTo(nomeBuscado);
 
-            if (cmp == 0) return comparacoes;  // encontrado
+            if (cmp == 0) return comparacoes;  //  encontrado
             else if (cmp < 0) esq = meio + 1;  // busca na metade direita
             else dir = meio - 1;               // busca na metade esquerda
         }
